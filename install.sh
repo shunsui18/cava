@@ -8,7 +8,16 @@
 set -euo pipefail
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# When invoked via  bash <(curl ...)  BASH_SOURCE[0] is a /proc/self/fd/<n>
+# pseudo-path, not a real directory. Fall back to CWD in that case so the
+# one-liner works when run from inside a cloned repo.
+_src="${BASH_SOURCE[0]}"
+if [[ "$_src" == /proc/self/fd/* || "$_src" == /dev/fd/* ]]; then
+  SCRIPT_DIR="$(pwd)"
+else
+  SCRIPT_DIR="$(cd "$(dirname "$_src")" && pwd)"
+fi
+unset _src
 THEMES_SRC="$SCRIPT_DIR/themes"
 CAVA_CFG_DIR="$HOME/.config/cava"
 CAVA_THEMES_DIR="$CAVA_CFG_DIR/themes"
