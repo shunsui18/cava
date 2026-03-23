@@ -1,0 +1,34 @@
+#    ░█▀▀░█▀█░█░█░█▀█░░░█▀▀░█▀█░█░░░█▀█░█▀▄░█▀▀          
+#    ░█░░░█▀█░▀▄▀░█▀█░░░█░░░█░█░█░░░█░█░█▀▄░▀▀█          
+#    ░▀▀▀░▀░▀░░▀░░▀░▀░░░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀▀▀          
+#  
+#    ░█░█░█▀█░█░█░▀▀█░█▀█░█░█░█░█░█▀▄░█▀█░░░█░█░█▀█░█▀▄░█░█
+#    ░░█░░█░█░█░█░▄▀░░█▀█░█▀▄░█░█░█▀▄░█▀█░░░░█░░█░█░█▀▄░█░█
+#    ░░▀░░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀░▀░▀▀▀░▀░▀░▀░▀░░░░▀░░▀▀▀░▀░▀░▀▀▀
+#------------------------------------------------------------
+
+[color]
+
+background = '#2a3450'
+
+gradient = 1
+gradient_count = 8
+gradient_color_1 = '#f2d4b8'
+gradient_color_2 = '#d8aac4'
+gradient_color_3 = '#8898c8'
+gradient_color_4 = '#7ab0c8'
+gradient_color_5 = '#7aa898'
+gradient_color_6 = '#e8d870'
+gradient_color_7 = '#e098a0'
+gradient_color_8 = '#e8eef8'
+
+horizontal_gradient = 1
+horizontal_gradient_count = 8
+horizontal_gradient_color_1 = '#f2d4b8'
+horizontal_gradient_color_2 = '#d8aac4'
+horizontal_gradient_color_3 = '#8898c8'
+horizontal_gradient_color_4 = '#7ab0c8'
+horizontal_gradient_color_5 = '#7aa898'
+horizontal_gradient_color_6 = '#e8d870'
+horizontal_gradient_color_7 = '#e098a0'
+horizontal_gradient_color_8 = '#e8eef8'
