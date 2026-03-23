@@ -8,17 +8,22 @@
 set -euo pipefail
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-# When invoked via  bash <(curl ...)  BASH_SOURCE[0] is a /proc/self/fd/<n>
-# pseudo-path, not a real directory. Fall back to CWD in that case so the
-# one-liner works when run from inside a cloned repo.
+REPO_RAW="https://raw.githubusercontent.com/shunsui18/cava/main"
+REMOTE_FLAVORS=(yoru hiru)          # canonical flavor list for remote installs
+_TMPDIR=""                           # set below if we go remote
+
 _src="${BASH_SOURCE[0]}"
 if [[ "$_src" == /proc/self/fd/* || "$_src" == /dev/fd/* ]]; then
-  SCRIPT_DIR="$(pwd)"
+  # Running via  bash <(curl ...)  — no local checkout available.
+  # We'll download theme files on demand after flavor selection.
+  SCRIPT_DIR=""
+  THEMES_SRC=""
 else
   SCRIPT_DIR="$(cd "$(dirname "$_src")" && pwd)"
+  THEMES_SRC="$SCRIPT_DIR/themes"
 fi
 unset _src
-THEMES_SRC="$SCRIPT_DIR/themes"
+
 CAVA_CFG_DIR="$HOME/.config/cava"
 CAVA_THEMES_DIR="$CAVA_CFG_DIR/themes"
 CAVA_CONFIG="$CAVA_CFG_DIR/config"
@@ -53,15 +58,35 @@ banner() {
   echo -e ""
 }
 
-# ── Discover flavors: files named  yozakura-<flavor>  inside ./themes/ ────────
+# ── Discover flavors ─────────────────────────────────────────────────────────
+# Local mode : scan themes/ for yozakura-* files
+# Remote mode: use the hardcoded REMOTE_FLAVORS array
 list_flavors() {
-  local found=()
-  while IFS= read -r -d '' f; do
-    local base
-    base="$(basename "$f")"
-    found+=("${base#yozakura-}")
-  done < <(find "$THEMES_SRC" -maxdepth 1 -type f -name 'yozakura-*' -print0 | sort -z)
-  printf '%s\n' "${found[@]}"
+  if [[ -d "$THEMES_SRC" ]]; then
+    local found=()
+    while IFS= read -r -d '' f; do
+      local base
+      base="$(basename "$f")"
+      found+=("${base#yozakura-}")
+    done < <(find "$THEMES_SRC" -maxdepth 1 -type f -name 'yozakura-*' -print0 | sort -z)
+    printf '%s\n' "${found[@]}"
+  else
+    printf '%s\n' "${REMOTE_FLAVORS[@]}"
+  fi
+}
+
+# ── Fetch theme files from GitHub (remote mode only) ─────────────────────────
+fetch_remote_themes() {
+  _TMPDIR="$(mktemp -d)"
+  info "Fetching theme files from GitHub…"
+  for flavor in "${REMOTE_FLAVORS[@]}"; do
+    local url="$REPO_RAW/themes/yozakura-$flavor"
+    local dest="$_TMPDIR/yozakura-$flavor"
+    curl -fsSL "$url" -o "$dest" \
+      || die "Failed to download theme: $url"
+  done
+  THEMES_SRC="$_TMPDIR"
+  ok "Themes fetched      →  (temp)"
 }
 
 # ── Usage ─────────────────────────────────────────────────────────────────────
@@ -73,9 +98,9 @@ usage() {
   echo "  --help, -h         Show this help"
   echo ""
   echo "Available flavors:"
-  while IFS= read -r f; do
+  for f in "${REMOTE_FLAVORS[@]}"; do
     echo "    $f"
-  done < <(list_flavors 2>/dev/null || true)
+  done
   echo ""
   echo "Run without arguments for an interactive menu."
 }
@@ -99,13 +124,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# ── Validate themes source directory ─────────────────────────────────────────
-[[ -d "$THEMES_SRC" ]] \
-  || die "themes/ directory not found at: $THEMES_SRC\nRun this script from the repo root."
-
-mapfile -t FLAVORS < <(list_flavors)
-(( ${#FLAVORS[@]} > 0 )) \
-  || die "No yozakura-* theme files found in: $THEMES_SRC"
+# ── Resolve theme source: local checkout or remote fetch ─────────────────────
+if [[ -n "$THEMES_SRC" && -d "$THEMES_SRC" ]]; then
+  # Local mode — validate themes dir
+  mapfile -t FLAVORS < <(list_flavors)
+  (( ${#FLAVORS[@]} > 0 )) \
+    || die "No yozakura-* theme files found in: $THEMES_SRC"
+else
+  # Remote mode — use hardcoded list; files fetched after flavor selection
+  mapfile -t FLAVORS < <(list_flavors)
+fi
 
 # ── Interactive menu (when --theme is not provided) ───────────────────────────
 if [[ -z "$FLAVOR" ]]; then
@@ -127,15 +155,21 @@ if [[ -z "$FLAVOR" ]]; then
   echo ""
 fi
 
+THEME_NAME="yozakura-$FLAVOR"
+
+# ── Fetch themes from GitHub if running in remote (curl pipe) mode ────────────
+# Must happen before we try to validate/copy any local file path.
+if [[ -z "$THEMES_SRC" || ! -d "$THEMES_SRC" ]]; then
+  fetch_remote_themes
+fi
+trap '[[ -n "$_TMPDIR" ]] && rm -rf "$_TMPDIR"' EXIT
+
 # ── Validate the chosen flavor ────────────────────────────────────────────────
 THEME_FILE="$THEMES_SRC/yozakura-$FLAVOR"
 [[ -f "$THEME_FILE" ]] \
   || die "Theme file not found: $THEME_FILE\nAvailable flavors: ${FLAVORS[*]}"
 
-THEME_NAME="yozakura-$FLAVOR"
-
-# ── Print header (only when using --theme directly, banner already shown above) ─
-[[ -z "${_BANNER_SHOWN:-}" ]] && { banner; _BANNER_SHOWN=1; }
+banner
 echo -e "  ${C_BOLD}Installing${C_RESET} ${C_PINK}${THEME_NAME}${C_RESET}\n"
 
 # ── Copy all theme files to cava themes directory ─────────────────────────────
