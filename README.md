@@ -44,7 +44,7 @@ A handcrafted pastel color palette for [cava](https://github.com/karlstav/cava),
 Run without any arguments to launch the guided menu:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/shunsui18/cava/main/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/shunsui18/yozakura-cava/main/install.sh)
 ```
 
 The installer will walk you through picking a flavor:
@@ -52,12 +52,9 @@ The installer will walk you through picking a flavor:
 ```
   夜桜 · Yozakura — cava theme installer
   ──────────────────────────────────────
-
   Choose a flavor:
-
    1)  yoru
    2)  hiru
-
   Enter number [1-2]: _
 ```
 
@@ -68,7 +65,7 @@ The installer will walk you through picking a flavor:
 Skip the menu entirely by passing the flavor directly:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/shunsui18/cava/main/install.sh) --theme hiru
+bash <(curl -fsSL https://raw.githubusercontent.com/shunsui18/yozakura-cava/main/install.sh) --theme hiru
 ```
 
 | Flag | Values | Description |
@@ -84,7 +81,7 @@ If you prefer to clone and run locally:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/shunsui18/cava.git && cd cava
+git clone https://github.com/shunsui18/yozakura-cava.git && cd yozakura-cava
 
 # 2a. Interactive
 ./install.sh
@@ -115,7 +112,7 @@ git clone https://github.com/shunsui18/cava.git && cd cava
 ## ✦ File Structure
 
 ```
-cava/
+yozakura-cava/
 ├── assets/
 │   ├── yozakura-yoru-cava-preview.png
 │   └── yozakura-hiru-cava-preview.png
